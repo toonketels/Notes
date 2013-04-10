@@ -164,11 +164,11 @@
 * Custom object defined to render views inside.
 
 * Allows modifications by overriding methods. Override show() 
-  && close() for custom animations.
+  & close() for custom animations.
 
 * Can be attached when already rendered serverside (existing).
 
-* When dymically adding regions (not during init?) we need to
+* When dynamically adding regions (not during init?) we need to
   manually call initialization procedure.
 
 
@@ -193,7 +193,7 @@
 * Always use "listenTo" in views (instead of "on") because it gets unbound automatically
   on "close". ListonTo makes the view keep track of all the callbacks.
 
-* Povides Close() method engineered to prevent zombee views by unbinding all listenTo
+* Povides Close() method engineered to prevent zombie views by unbinding all listenTo
   events, all view events, all dom events, removing this.el from DOM and firing custom
   closing events. Hook into these custom closing events to do additional cleanup (so
   dont override close).
@@ -224,7 +224,7 @@
   the ui hash.
 
 * Invoke functions from withing logicless templates with templateHelpers. Use
-  this in these functions to access other templateHelpers and serialized data.
+  `this` in these functions to access other templateHelpers and serialized data.
 
 * Alternate template used based on model data with `getTemplate` method.
 
@@ -273,6 +273,7 @@
 
 ### CompositeView
 
+* A view for both rendereing a model and a collection at the same time?
 
 ## How are things decoupled in Marionette
 
@@ -340,4 +341,4 @@
 * Why is addRegions and buildRegions in applciation object not called
   automatically during intializaton/boot?
   => to allow flexibility?
-* Difference between itemView and collectionView?
+* Difference between itemView and collectionView?test
