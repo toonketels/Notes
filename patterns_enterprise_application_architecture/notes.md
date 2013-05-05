@@ -61,6 +61,62 @@ we should not be dogmatic about it. Just know to refactor when
 complexity rises.
 
 
+## 2. ORGANIZING DOMAIN LOGIC
 
+Since the domain is the meat of the application, we should take care
+organizing it.
 
+3 primary patterns to organize domain
+* transaction script
+* domain logic
+* table module
+
+### Transaction script
+
+A "script" that runs whenever a certain action is taken and which
+completes with a certain data being presented. All the actions, 
+calculations... are contained within the script.
+
++ Easiest to start with
++ Easy to understand
+- Can grow unyieldingly for complex systems
+- Can result in a lot of code duplication for complex systems.
+
+Note that a "script" does not need to be in one file, or can not
+share code with other transaction scripts.
+
+### Domain model
+
+Object oriented model of the domain. After investigation the different
+players in the problem space are identified. These become the objects
+(nouns). Different actions become methods on the objects.
+
+When a certain action needs to be taken, the thread passes through
+all the different objects which have their say.
+
++ Easiest to reason about when complex systems
++ Most scalable (just add objects)
++ Prevent code duplication
+- Hard for new developers to understand the specific set up
+- Complex to set up 
+
+### Table module
+
+I don't really understand this one.
+
+Bares some resemblance with domain model in the way that the different
+players are objects. Unlike the domain model (where we have multiple
+instances of these objects) we only have one instance per object and
+a record to identify the specific data. Used in .net.
+
++ Easier mapping on underlying data structure?
+
+### Further division with service layer
+
+The domain layers is sometimes divided further into a service layers and
+the underlying domain layer.
+
+The service layers is meant to provide a public/consitent API.
+
+It's adviced to keep it as slim as possible.
 
