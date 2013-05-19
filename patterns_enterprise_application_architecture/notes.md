@@ -109,6 +109,8 @@ players are objects. Unlike the domain model (where we have multiple
 instances of these objects) we only have one instance per object and
 a record to identify the specific data. Used in .net.
 
+Makes use of record sets (which I don't know either).
+
 + Easier mapping on underlying data structure?
 
 ### Further division with service layer
@@ -120,3 +122,73 @@ The service layers is meant to provide a public/consitent API.
 
 It's adviced to keep it as slim as possible.
 
+
+## 3. Mapping to relational databases
+
+The domain model (objects) need to be made persistent to a (relational)
+database.
+
+There are ways to do this but it may boil down to:
+* using queries directly
+* provide some kind of abstraction so objects are used to map the
+  domain model onto relational structure
+
+The problem is that the relational database and domain model don't naturally
+fit. An [object-relational mapping](http://en.wikipedia.org/wiki/Object-relational_mapping) objects
+can be used to translate the object into a relational structure. This
+gives the benefit that the queries only need to be updatd on one place.
+
+In general the data-source layer has one object per table or one per record.
+
+### The behavioral problem
+
+The behavior problem is the problem about how to load and save objects
+back to the database.
+
+Problems with loading:
+* who is responsible for loading items (what object has a the load method)
+  (=> unit of work)
+* object which is read should not be modified (consistency)
+* an a load, you also want to get all the corresponding objects (sale, we want
+  customer too), how to prevent getting a massive object graph (=> lazy load)
+* when loading the same record twice from different parts of the code, how
+  do we ensure they both get updated when code updates one (they are best
+  references to the same object) (=> identify map)
+
+Problems with saving:
+* when should objects be saved (they just live in memory)
+
+### Reading data
+
+Reading data is about `find(id)` or `findForCustomer(customer) methods
+to actually retrieve data from the db.
+
+Where to add those methods:
+* on one object per table: the object per table
+* on one object per row:
+  - or as a static (class method)
+  - or as a new object => this is preferred
+
+The risk with finders is that they only return the objects found from db,
+not new ones only in memory.
+
+For performance is best to minimize trips to db
+* even if it means to retrieve more data then you need
+* get more data back via joins (but try not more then 4)
+
+### Connection
+
+Creating a connection is expensive, managing it (keeping it open) too.
+So we make some trade-off between keeping it open and opening, closing
+connections.
+
+Best to abstract the connection away so go get a hold on a connection,
+code will call that object. The object will give an existing or create a
+new connection. Our code does not need to worry about it.
+
+### Object oriented databases
+
+Instead of relational databases we can also use [object oriented databases](http://en.wikipedia.org/wiki/Object_database).
+
+These tend to be more complex then pure relational databases but allow
+objects to be serialized to the db. 
