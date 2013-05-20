@@ -123,7 +123,7 @@ The service layers is meant to provide a public/consitent API.
 It's adviced to keep it as slim as possible.
 
 
-## 3. Mapping to relational databases
+## 3. MAPPING TO RELATIONAL DATABASES
 
 The domain model (objects) need to be made persistent to a (relational)
 database.
@@ -192,3 +192,166 @@ Instead of relational databases we can also use [object oriented databases](http
 
 These tend to be more complex then pure relational databases but allow
 objects to be serialized to the db. 
+
+
+## 4. WEB PRESENTATION
+
+Usually, scripts are best at processing response while pages are best at
+displaying it.
+
+To accommodate separation between processing and presentation use _MVC_ -
+Model, View and Input Controller. It's the input controller to choose which
+model to use, and once it receive the data back from the model, will
+choose the appropriate view.
+
+If the application is in control of the order of screen the user is
+navigating we also need an _Application Controller_
+
+### View patterns
+
+(Transform View || Template View) * Two Step View
+
+Transform view transform the (XML) output by applying different stylesheet?
+
+Template view uses templates and placeholders and maybe a helper object
+to pass the variables to the template. The risk exists too much logic 
+resides within the templates.
+
+Two Step is about compiling the template first, and having an different
+application wide outer template. These days, it's all about nested templates.
+
+### Input controller patterns
+
+Page Controller || Front Controller
+
+Front controller allows one object to control the entire application.
+
+
+## 5. CONCURRENCY
+
+Concurrency problems all have to do with multiple processes and threads
+manipulating the same data.
+
+Concurrency is hard because:
+* hard to think off all the scenarios at play
+* hard to test for
+
+Enterprise applications deal with it mostly be _database transactions_
+delegating the problem to the database. We still run into problems when
+our data spans multiple transactions (offline concurrency) or when we 
+deal with different threads application server.
+
+### Concurrency problems
+
+Some problems:
+* lost updates - update while somebody else is updating 
+* inconsistent read - grab multiple bags, grab one while the two bags are
+  updated, grab second after update. The content is now partly before,
+  partly after edit. This content is never correct (nor before, nor after).
+
+Basic idea:
+* for _correctness_, we best do everything sequential
+* for _liveliness_, we best do everything concurrently
+* choose your trade-off, or a system to manage concurrency (with its own
+  set of problems)
+
+### Execution contexts
+
+Two contexts (in respect to outside world):
+* request
+* session: multiple consecutive requests tied to the same user (session)
+
+Note, the server can be seen as:
+* the server to the client => http sessions
+* a client to db servers (or other servers it talks to) => db sessions
+
+OS processes and treads:
+* process: heavyweight execution context with lots of isolation internal
+  data
+* thread: lightweight, multiple within process, but do share memory
+
+Ideally, processes or threads are associated with a session. Since this
+very hard, they become associated with requests. A different architecture
+is that of the event loop, which is just one process handling all the
+requests.
+
+In db land: a _transaction_ spans multiple requests and treats it as a
+single request.
+
+### Isolation and immutability
+
+We mostly have two strategies in dealing with concurrency problems:
+* isolation: ensure only one active agent can modify the data.
+  OS does so with processes. Svn does this with locking a file before
+  modifying.
+* immutability: ensure data can't be changed. Not possible for all data
+  but by making most data like this, we make it already easier for ourselves.
+
+### Optimistic and pessimistic concurrency control
+
+If data is not isolated and mutable:
+* optimistic lock: allow modification but rejects latest save, up to the
+  person to check what to do
+* pessimistic lock: really locks a file. First one who locks it makes it
+  impossible for others to acquire the lock.
+
+To make matters worse, we can have problems with inconsistent reads or
+deadlocks. 
+
+These can be prevented with timeouts (loosing locks), deadlock detection
+and choosing victim or a program to make you acquire all locks up front.
+
+It's too easy to not consider all scenarios when creating your deadlock
+proof schema so it's best to keep something conservative and simple.
+
+### Transactions
+
+Transactions must be ACID:
+* Atomic: don't partially complete. It's an all or nothing game. If you
+  can't complete, roll back. If you reach the end, commit.
+* Consistent: the resources must be in a consistent non corrupted state
+  at the start and end of the transaction
+* Isolated: result transaction only visible to rest of system once committed.
+* Durable: result must be made permanent (and should survive a crash). 
+  So no, not in memory.
+
+#### Transaction resources
+
+The thing onto which we use transactions to control concurrency:
+* db
+* message queues
+* printers
+
+For maximum throughput (because of locks) keeps transactions as short
+as possible.
+
+Ways to balance correctness (trough isolation) vs liveliness:
+
+* serializable: strongest, transactions are performend sequential after
+  on another. No guarantees who comes first. But always in a correct state.
+
+* repeatable read: whenever an action, the resources are read again to
+  get the most accurate state.
+
+* read committed: only read files once, don't poll to see if something
+  has changed.
+
+* uncommitted reads: get insight in uncommitted changes. Allows for dirty
+  reads.
+
+### Offline concurrency control
+
+Optimistic Offline Lock || Pessimistic Offline Lock || 
+Coarse-Grained lock || Implicit Lock
+
+When dealing with concurrency do:
+1. use transaction systems (like db transactions)
+2. use long transactions that span multiple requests
+3. use patterns here to deal with it in our application if we really 
+   have to.
+
+
+## 6. SESSION STATE
+
+
+
